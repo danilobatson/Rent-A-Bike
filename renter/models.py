@@ -9,15 +9,18 @@ BASE_PRICE = 25.00
 TANDEM_SURCHARGE = 15.00
 ELECTRIC_SURCHARGE = 25.00
 class Bike(models.Model):
+  STANDARD = "ST"
+  TANDEM = "TA"
+  ELECTRIC = "EL"
   BIKE_TYPE_CHOICES = [
-    (BASE_PRICE, 25.00),
-    (TANDEM_SURCHARGE, 15.00),
-    (ELECTRIC_SURCHARGE, 25.00)
+      (STANDARD, "Standard"),
+      (TANDEM, "Tandem"),
+      (ELECTRIC, "Electric"),
   ]
   def __str__(self):
     return self.bike_type + " - " + self.color
 
-  color = models.CharField(max_length=10 default = '')
+  color = models.CharField(max_length=10, default = '')
   bike_type = models.CharField(
       max_length=2, choices=BIKE_TYPE_CHOICES, default=STANDARD)
 
@@ -34,6 +37,16 @@ class Renter(models.Model):
 class Rental(models.Model):
   def __str__(self):
     return (f'{self.first_name} {self.last_name} - #{self.phone}')
+  def calc_price(self):
+    curr_price = BASE_PRICE
+    if self.bike.bike_type == "TA":
+      curr_price += TANDEM_SURCHARGE
+    if self.bike.bike_type == "EL":
+      curr_price += ELECTRIC_SURCHARGE
+    if self.renter.vip_num > 0:
+     curr_price *= 0.8
+    self.price = curr_price
+
 
   bike = models.ForeignKey(Bike, on_delete=models.CASCADE)
   renter = models.ForeignKey(Renter, on_delete=models.CASCADE)
@@ -41,8 +54,8 @@ class Rental(models.Model):
   date = models.DateField(default=datetime.date.today())
   price = models.FloatField(default=0)
 
-  def calc_price(self):
-    curr_price = BASE_PRICE
+
+
 # Start with the fields:
 
 # bike which is a foreign key for the Bike model
